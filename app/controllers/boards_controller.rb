@@ -8,6 +8,8 @@ class BoardsController < ApplicationController
 
   # GET /boards/1 or /boards/1.json
   def show
+    #@posts = Post.all
+    set_posts
   end
 
   # GET /boards/new
@@ -63,6 +65,9 @@ class BoardsController < ApplicationController
       @board = Board.find(params[:id])
     end
 
+    def set_posts
+      @posts = @board.posts
+    end
     # Only allow a list of trusted parameters through.
     def board_params
       params.require(:board).permit(:name)

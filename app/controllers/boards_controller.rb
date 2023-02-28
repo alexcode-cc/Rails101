@@ -1,6 +1,6 @@
 class BoardsController < ApplicationController
   before_action :set_board, only: %i[ show edit update destroy ]
-  before_action :authenticate_user! , only: [:new]
+  before_action :authenticate_user! , only: [:new, :create]
 
   # GET /boards or /boards.json
   def index
@@ -25,6 +25,7 @@ class BoardsController < ApplicationController
   # POST /boards or /boards.json
   def create
     @board = Board.new(board_params)
+    @board.user = current_user
 
     respond_to do |format|
       if @board.save

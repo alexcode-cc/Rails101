@@ -1,6 +1,7 @@
 class BoardsController < ApplicationController
   before_action :set_board, only: %i[ show edit update destroy ]
-  before_action :authenticate_user! , only: [:new, :create]
+  before_action :authenticate_user! , only: [:new, :create, :edit, :update, :destroy]
+  before_action :check_user , only: [:edit, :update, :destroy]
 
   # GET /boards or /boards.json
   def index
@@ -53,6 +54,7 @@ class BoardsController < ApplicationController
 
   # DELETE /boards/1 or /boards/1.json
   def destroy
+
     @board.destroy
 
     respond_to do |format|
@@ -70,8 +72,15 @@ class BoardsController < ApplicationController
     def set_posts
       @posts = @board.posts
     end
+
     # Only allow a list of trusted parameters through.
     def board_params
       params.require(:board).permit(:name)
+    end
+
+    def check_user
+    if current_user != @board.user
+      redirect_to root_path, alert: "You have no permission."
+    end
     end
 end

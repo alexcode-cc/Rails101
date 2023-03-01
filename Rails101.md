@@ -55,6 +55,7 @@ git config --global user.name user
 git config --global user.email user.mail
 git config --global core.editor vim
 git config --global ui.color true
+git config --global init.defaultBranch main
 </pre>
 
 ## Setup Vim
@@ -145,7 +146,7 @@ sudo ufw enable
 ## Clone Rails101
 
 <pre>
-git clone git@github.com:alexcode-cc/rails101.git
+git clone git@github.com:alexcode-cc/Rails101.git
 cd rails101
 bundle
 rails db:migrate

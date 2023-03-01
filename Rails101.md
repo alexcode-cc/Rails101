@@ -15,6 +15,7 @@ ssh-keygen -t rsa -C user@ubuntu
 ## Enabld authorized_keys
 
 <pre>
+cd ~/.ssh
 cat /tmp/key.pub >> authorized_keys
 chmod 600 authorized_keys
 </pre>
@@ -25,10 +26,10 @@ chmod 600 authorized_keys
 vim ~/.bash_aliases
 </pre>
 
-<pre>
+```
 alias update='sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y'
 alias vin='vim +NERDTree'
-</pre>
+```
 
 <pre>
 source ~/.bash_aliases
@@ -160,9 +161,13 @@ rails server -b 0.0.0.0
 
 <pre>
 rails new rails102
+cp .ruby-gemset rails102/.
+cp .ruby-version rails102/.
 cd rails102
 bundle
-rails server -b 0.0.0.0
+echo rails server -b 0.0.0.0 >> run.sh
+chmod u+x run.sh
+./run.sh
 </pre>
 
 ## Setup Git
@@ -179,8 +184,6 @@ git flow init
 rails generate scaffold board name:string
 rails generate scaffold post title:string content:text
 rails db:migrate
-echo rails server -b 0.0.0.0 >> run.sh
-chmod u+x run.sh
 ./run.sh
 </pre>
 
@@ -190,14 +193,14 @@ chmod u+x run.sh
 vim db/seed.ruby
 </pre>
 
-<pre>
+```
 5.times do |i|
   Board.create(name: "board ##{i+1}")
   2.times do |j|
     Post.create(title: "title for b#{i+1} p#{j+1}", content: "content for board ##{i+1} post ##{j+1}")
   end
 end
-</pre>
+```
 
 <pre>
 rails db:seed
@@ -209,9 +212,24 @@ rails db:seed
 vim config/routes.rb
 </pre>
 
-<pre>
+```
 root :to => "boards#index"
+```
+
+<pre>
+vim app/views/boards/index.html.erb
 </pre>
+
+```
+ | <%= link_to 'Posts', posts_path %> 
+```
+<pre>
+vim app/views/posts/index.html.erb
+</pre>
+
+```
+ | <%= link_to 'Boards', boards_path %> 
+```
 
 <pre>
 ./run.sh
@@ -230,17 +248,17 @@ git commit -m "feat: scaffold board/post"
 vim app/moddels/board.rb
 </pre>
 
-<pre>
+```
 has_many :posts
-</pre>
+```
 
 <pre>
 vim app/moddels/post.rb
 </pre>
 
-<pre>
+```
 belongs_to :boards
-</pre>
+```
 
 ## Mirgate Add Board Id
 
@@ -248,11 +266,11 @@ belongs_to :boards
 rails generate migration add_board_id_to_post board_id:integer
 </pre>
 
-<pre>
-   def change
-	add_column :posts, :board_id, :integer
-   end
-</pre>
+```
+def change
+ add_column :posts, :board_id, :integer
+end
+```
 
 <pre>
 rails db:migrate
@@ -260,11 +278,11 @@ rails db:migrate
 
 ## Modify Routes for Nested Resources
 
-<pre>
+```
 resources :boards do
   resources :posts
 end
-</pre>
+```
 
 ## Git commit for add board id
 
@@ -272,3 +290,114 @@ end
 git add .
 git commit -m "feat: add board id to post"
 </pre>
+
+## Modify boards controller / views for NMested Resources
+
+<pre>
+vim app/controllers/boards_controller.rb
+</pre>
+
+```
+  def show
+    set_posts
+  end
+```
+
+<pre>
+vim app/views/boards/show.html.erb
+</pre>
+
+```
+<h1>Listing Posts</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Content</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @posts.each do |post| %>
+      <tr>
+        <td><%= post.title %>
+        <td><%= post.content %>
+        <td><%= link_to 'Show', board_post_path(@board, post) %></td>
+        <td><%= link_to 'Edit', edit_board_post_path(@board, post) %></td>
+        <td><%= link_to 'Destroy', board_post_path(@board, post), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+<br>
+<%= link_to 'New Post', new_board_post_path(@board) | 
+<%= link_to 'Edit', edit_board_path(@board) %> |
+<%= link_to 'Back', boards_path %> 
+```
+
+## Modify posts controller / views for NMested Resources
+
+<pre>
+vim app/controllers/posts_controller.rb
+</pre>
+
+```
+before_action :set_board
+before_action :set_post, only: %i[ show edit update destroy ] 
+
+def index                                                                                                            
+  redirect_to board_path(@board)
+end
+
+def new
+  @post = @board.posts.build                                                                                         
+end 
+
+def create
+  @post = @board.posts.build(post_params)
+
+  respond_to do |format|
+    if @post.save
+      format.html { redirect_to board_post_path(@board, @post), notice: "Post was successfully created." }           
+      format.json { render :show, status: :created, location: @post }
+    else
+      format.html { render :new, status: :unprocessable_entity }
+      format.json { render json: @post.errors, status: :unprocessable_entity }
+    end 
+  end 
+end 
+
+def update
+  respond_to do |format|
+    if @post.update(post_params)
+      format.html { redirect_to board_post_path(@board, @post), notice: "Post was successfully updated." }
+      format.json { render :show, status: :ok, location: @post }                                                     
+    else
+      format.html { render :edit, status: :unprocessable_entity }
+      format.json { render json: @post.errors, status: :unprocessable_entity }
+    end 
+  end 
+end 
+
+def destroy                                                                                                          
+  @post.destroy
+
+  respond_to do |format|
+    format.html { redirect_to board_posts_path(@board), notice: "Post was successfully destroyed." }
+    format.json { head :no_content }
+  end 
+end 
+
+def set_posts
+  @posts = @board.posts 
+end 
+
+def set_board                                                                                                      
+  @board = Board.find(params[:board_id])
+end 
+
+def set_post
+  @post = @board.posts.find(params[:id])
+end 
+```
+

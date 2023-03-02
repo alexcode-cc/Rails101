@@ -42,7 +42,7 @@ source ~/.bash_aliases
 
 ## Update Ubuntu
 
-aka 'sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y'
+aka `sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y`
 
 ```sh
 update
@@ -200,7 +200,7 @@ rails db:migrate
 ## Create Seed
 
 ```sh
-vim db/seed.ruby
+vim db/seed.rb
 ```
 
 ```rb
@@ -268,7 +268,7 @@ vim app/moddels/post.rb
 ```
 
 ```rb
-belongs_to :boards
+belongs_to :board
 ```
 
 ## Mirgate `add board id to post`
@@ -302,6 +302,25 @@ git add .
 git commit -m "feat: add board id to post"
 ```
 
+## Modify seed for Nested Resources
+
+```sh
+vim db/seed.rb
+```
+
+```rb
+5.times do |i|
+  Board.create(name: "board ##{i+1}")
+  2.times do |j|
+    Post.create(title: "title for b#{i+1} p#{j+1}", content: "content for board ##{i+1} post ##{j+1}", board_id: i+1)
+  end
+end
+```
+
+```sh
+rails db:reset
+```
+
 ## Modify board's controller / views for Nested Resources
 
 ```sh
@@ -319,29 +338,31 @@ vim app/views/boards/show.html.erb
 ```
 
 ```rb
+<% if @posts != nil %>
 <h1>Listing Posts</h1>
-<table>
-  <thead>
-    <tr>
-      <th>Title</th>
-      <th>Content</th>
-      <th colspan="3"></th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @posts.each do |post| %>
-      <tr>
-        <td><%= post.title %>
-        <td><%= post.content %>
-        <td><%= link_to 'Show', board_post_path(@board, post) %></td>
-        <td><%= link_to 'Edit', edit_board_post_path(@board, post) %></td>
-        <td><%= link_to 'Destroy', board_post_path(@board, post), method: :delete, data: { confirm: 'Are you sure?' } %></td>
-      </tr>
-    <% end %>
-  </tbody>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Content</th>
+                <th colspan="3"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <% @posts.each do |post| %>
+            <tr>
+                <td><%= post.title %>
+                <td><%= post.content %>
+                <td><%= link_to 'Show', board_post_path(@board, post) %></td>
+                <td><%= link_to 'Edit', edit_board_post_path(@board, post) %></td>
+                <td><%= link_to 'Destroy', board_post_path(@board, post), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+            </tr>
+        <% end %>
+    </tbody>
 </table>
+<% end %>
 <br>
-<%= link_to 'New Post', new_board_post_path(@board) | 
+<%= link_to 'New Post', new_board_post_path(@board) %> |
 <%= link_to 'Edit', edit_board_path(@board) %> |
 <%= link_to 'Back', boards_path %> 
 ```
@@ -356,12 +377,11 @@ vim app/controllers/posts_controller.rb
 before_action :set_board
 before_action :set_post, only: %i[ show edit update destroy ] 
 
-def index                                                                                                            
-  redirect_to board_path(@board)
+def index                                                                             redirect_to board_path(@board)
 end
 
 def new
-  @post = @board.posts.build                                                                                         
+  @post = @board.posts.build                                                    
 end 
 
 def create
@@ -399,15 +419,199 @@ def destroy
   end 
 end 
 
-def set_posts
-  @posts = @board.posts 
-end 
-
-def set_board                                                                                                      
+def set_board
   @board = Board.find(params[:board_id])
 end 
 
 def set_post
   @post = @board.posts.find(params[:id])
 end 
+```
+
+```sh
+vim app/views/posts/show.html.erb
+```
+
+```rb
+<%= link_to 'Edit', edit_board_post_path(@board,@post) %> |
+<%= link_to 'Back', board_posts_path(@board) %>
+```
+
+```sh
+vim app/views/posts/new.html.erb
+```
+
+```rb
+<%= form_with(model: @post, local: true, :url => board_posts_path(@board)) do |f| %>
+  <%= render 'form', form: f %>
+<% end %>
+
+<%= link_to 'Back', board_posts_path(@board) %>
+```
+
+```sh
+vim app/views/posts/edit.html.erb
+```
+
+```rb
+<%= form_with(model: @post, local: true, :url => board_post_path(@board, @post)) do |f| %>
+  <%= render 'form', form: f %>
+<% end %>
+
+<%= link_to 'Show', board_post_path(@board,@post) %> |
+<%= link_to 'Back', board_posts_path(@board) %>
+```
+
+```sh
+vim app/views/posts/_form.html.erb
+```
+
+```rb
+<% if @post.errors.any? %>
+  <div id="error_explanation">
+    <h2><%= pluralize(@post.errors.count, "error") %> prohibited this post from being saved:</h2>
+    <ul>
+    <% @post.errors.full_messages.each do |message| %>
+      <li><%= message %></li>
+    <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="field">
+  <%= form.label :title %>
+  <%= form.text_field :title, id: :post_title %>
+</div>
+
+<div class="field">
+  <%= form.label :content %>
+  <%= form.text_area :content, id: :post_content %>
+</div>
+
+<div class="actions">
+  <%= form.submit %>
+</div>
+```
+
+## Git Commit for Nested Resources Views
+
+```sh
+git add .
+git commit -m "feat: Modify controllers/viws for nested resources"
+```
+
+## Install devise
+
+```sh
+vim Gemfile
+```
+
+```rb
+# Use devise for user management
+gem 'devise'
+# Use ActiveModel has_secure_password
+gem 'bcrypt', '~> 3.1.7'
+```
+
+```sh
+bundle install
+rails generate devise:install
+vim config/environments/development.rb
+```
+
+```rb
+config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+```
+
+```sh
+vim app/views/layouts/application.html.erb
+```
+
+```rb
+<p class="notice"><%= notice %></p>
+<p class="alert"><%= alert %></p>
+```
+
+```sh
+rails generate:views
+rails generate devise user
+rails db:migrate
+vim app/controllers/boards_controller.rb
+```
+
+```rb
+before_action :authenticate_user! , only: [:new]
+```
+
+## Git Commit for Install Devise 
+
+```sh
+git add .
+git commit -m "feat: Install devise"
+```
+
+## Add User Navigation Bar
+
+```
+mkdir app/views/common
+vim app/views/common/_user_nav.html.erb
+```
+
+```rb
+<div class="user_navigation">
+  <% if !current_user %>
+    <%= link_to 'Sign in', new_user_session_path %>
+    <%= link_to 'Sign up', new_user_registration_path %>
+  <% else %>
+    Hi! <%= current_user.email %>
+    <%= link_to 'Sign out', destroy_user_session_path, :method => :delete %>
+  <% end %>
+</div>
+```
+
+```sh
+vim vim app/views/layouts/application.html.erb
+```
+
+```rb
+<%= render 'common/user_nav' %>
+```
+
+## Git Commit for User Navigation Bar 
+
+```sh
+git add .
+git commit -m "feat: add user navigation bar"
+```
+
+## Mirgate `add user id to board`
+
+```sh
+rails generate migration add_user_id_to_board user_id:integer
+```
+
+```rb
+def change
+ add_column :boards, :user_id, :integer
+end
+```
+
+```sh
+vim app/models/board.rb
+```
+
+```rb
+belongs_to :user
+```
+
+```sh
+vim app/models/user.rb
+```
+
+```rb
+has_many :boards
+```
+
+```sh
+rails db:migrate
 ```

@@ -1,165 +1,175 @@
 # Install Ubuntu 20.04 LTS
+Install Ubuntu Server 20.04 LTS
 
 ## Install openssh-server
+enable openssh server
 
-<pre>
+```sh
 sudo apt install openssh-server
-</pre>
+```
 
 ## Install ssh Key
+create ssh key for user
 
-<pre>
+```sh
 ssh-keygen -t rsa -C user@ubuntu
-</pre>
+```
 
 ## Enabld authorized_keys
+copy authorized user's key for enable public key authorize
 
-<pre>
+```sh
 cd ~/.ssh
 cat /tmp/key.pub >> authorized_keys
 chmod 600 authorized_keys
-</pre>
+```
 
 ## Setup aliases
+setup useful aliases
 
-<pre>
+```sh
 vim ~/.bash_aliases
-</pre>
-
 ```
+
+```sh
 alias update='sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y'
 alias vin='vim +NERDTree'
 ```
 
-<pre>
+```sh
 source ~/.bash_aliases
-</pre>
+```
 
 ## Update Ubuntu
 
-<pre>
+aka 'sudo apt update && sudo apt upgrade -y && sudo apt autoremove -y'
+
+```sh
 update
-</pre>
+```
 
-## Install Tools
+## Install Packages
+install packages for development
 
-<pre>
-sudo apt install git git-flow vim curl wget gpg w3m
-</pre>
+```sh
+sudo apt install git git-flow vim curl wget gpg w3m -y
+```
 
 # Setup Ubuntu
+setup Ubuntu development environment
 
-## Setup Git
+## Config Git
+config git's global settings
 
-<pre>
+```sh
 git config --global user.name user
 git config --global user.email user.mail
 git config --global core.editor vim
 git config --global ui.color true
 git config --global init.defaultBranch main
-</pre>
+```
 
 ## Setup Vim
+setup Vim and plugins
 
-<pre>
+```sh
 git clone git@github.com:alexcode-cc/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 git clone git@github.com:lifepillar/vim-solarized8.git ~/.vim/pack/themes/opt/solarized8
 wget https://raw.githubusercontent.com/alexcode-cc/myconfig/main/.vimrc ~/.vimrc
-vim
-</pre>
-
-<pre>
-:PluginInstall!
-</pre>
+vim +PluginInstall!
+```
 
 ## Setup RVM
+setup RVM for ruby management
 
-<pre>
+```sh
 gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
 \curl -sSL https://get.rvm.io | bash -s stable --auto-dotfiles
-</pre>
+```
+
+
+## Setup gemrc for disable install documents
+```sh
+vim ~/.gemrc
+```
+
+```yml
+gem: --no-ri --no-rdoc --no-document
+```
 
 ## Install Ruby 2.7.2
-
-<pre>
-vim ~/.gemrc
-</pre>
-
-<pre>
-gem: --no-ri --no-rdoc --no-document
-</pre>
-
-<pre>
+```sh
 rvm install 2.7.2 --disable-install-document
 gem update --system
 ruby -v
-</pre>
+```
 
-ruby 2.7.2p137 (2020-10-01 revision 5445e04352) [x86_64-linux]
+`rb 2.7.2p137 (2020-10-01 revision 5445e04352) [x86_64-linux]`
 
-<pre>
+```sh
 gem -v
-</pre>
+```
 
-3.4.7
+`3.4.7`
 
 ## Install Node 16.9.1
 
-<pre>
+```sh
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - && sudo apt-get install -y nodejs
 sudo npm install -g npm
 sudo npm install -g yarn
 node -v
-</pre>
+```
 
-v16.19.1
+`v16.19.1`
 
-<pre>
+```sh
 npm -v
-</pre>
+```
 
-9.5.1
+`9.5.1`
 
-<pre>
+```sh
 yarn -v
-</pre>
-1.22.19
+```
+
+`1.22.19`
 
 ## Install Rails 5.1.7
 
-<pre>
+```sh
 gem install rails -v 5.1.7
-</pre>
+```
 
 ## Create GemSet
 
-<pre>
+```sh
 rvm use 2.7.2@rails517 --create --default --ruby-version
-</pre>
+```
 
 ## Setup UFW
 
-<pre>
+```sh
 sudo ufw allow from 192.168.0.0/24
 sudo ufw enable
-</pre>
+```
 
 ## Clone Rails101
 
-<pre>
+```sh
 git clone git@github.com:alexcode-cc/Rails101.git
 cd rails101
 bundle
 rails db:migrate
 rails db:seed
 rails server -b 0.0.0.0
-</pre>
+```
 
 # Setup Rails102
 
 ## Create New Project
 
-<pre>
+```sh
 rails new rails102
 cp .ruby-gemset rails102/.
 cp .ruby-version rails102/.
@@ -168,32 +178,32 @@ bundle
 echo rails server -b 0.0.0.0 >> run.sh
 chmod u+x run.sh
 ./run.sh
-</pre>
+```
 
-## Setup Git
+## Init Git
 
-<pre>
+```sh
 git add .
 git commit -m "Initial commit"
 git flow init
-</pre>
+```
 
 ## Scaffold Boards Posts
 
-<pre>
+```sh
 rails generate scaffold board name:string
 rails generate scaffold post title:string content:text
 rails db:migrate
 ./run.sh
-</pre>
+```
 
 ## Create Seed
 
-<pre>
+```sh
 vim db/seed.ruby
-</pre>
-
 ```
+
+```rb
 5.times do |i|
   Board.create(name: "board ##{i+1}")
   2.times do |j|
@@ -202,112 +212,113 @@ vim db/seed.ruby
 end
 ```
 
-<pre>
+```sh
 rails db:seed
-</pre>
+```
 
 ## Setup Routes
 
-<pre>
+```sh
 vim config/routes.rb
-</pre>
-
 ```
+
+```rb
 root :to => "boards#index"
 ```
 
-<pre>
+```sh
 vim app/views/boards/index.html.erb
-</pre>
-
 ```
+
+```rb
  | <%= link_to 'Posts', posts_path %> 
 ```
-<pre>
-vim app/views/posts/index.html.erb
-</pre>
 
+```sh
+vim app/views/posts/index.html.erb
 ```
+
+```rb
  | <%= link_to 'Boards', boards_path %> 
 ```
 
-<pre>
+```sh
 ./run.sh
-</pre>
+```
 
 ## Git Commit for Scaffold
 
-<pre>
+```sh
 git add .
 git commit -m "feat: scaffold board/post"
-</pre>
-
-## Has many / Belongs to
-
-<pre>
-vim app/moddels/board.rb
-</pre>
-
 ```
+
+## Add `has many` / `belongs to`
+
+```sh
+vim app/moddels/board.rb
+```
+
+```rb
 has_many :posts
 ```
 
-<pre>
+```sh
 vim app/moddels/post.rb
-</pre>
-
 ```
+
+```rb
 belongs_to :boards
 ```
 
-## Mirgate Add Board Id
+## Mirgate `add board id to post`
 
-<pre>
+```sh
 rails generate migration add_board_id_to_post board_id:integer
-</pre>
-
 ```
+
+```rb
 def change
  add_column :posts, :board_id, :integer
 end
 ```
 
-<pre>
+```sh
 rails db:migrate
-</pre>
+```
 
 ## Modify Routes for Nested Resources
 
-```
+```rb
 resources :boards do
   resources :posts
 end
 ```
 
-## Git commit for add board id
+## Git Commit for Add board id
 
-<pre>
+```sh
 git add .
 git commit -m "feat: add board id to post"
-</pre>
+```
 
-## Modify boards controller / views for NMested Resources
+## Modify board's controller / views for Nested Resources
 
-<pre>
+```sh
 vim app/controllers/boards_controller.rb
-</pre>
-
-```
-  def show
-    set_posts
-  end
 ```
 
-<pre>
+```rb
+def show
+  set_posts
+end
+```
+
+```sh
 vim app/views/boards/show.html.erb
-</pre>
-
 ```
+
+```rb
 <h1>Listing Posts</h1>
 <table>
   <thead>
@@ -335,13 +346,13 @@ vim app/views/boards/show.html.erb
 <%= link_to 'Back', boards_path %> 
 ```
 
-## Modify posts controller / views for NMested Resources
+## Modify posts controller / views for Nested Resources
 
-<pre>
+```sh
 vim app/controllers/posts_controller.rb
-</pre>
-
 ```
+
+```rb
 before_action :set_board
 before_action :set_post, only: %i[ show edit update destroy ] 
 
@@ -400,4 +411,3 @@ def set_post
   @post = @board.posts.find(params[:id])
 end 
 ```
-

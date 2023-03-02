@@ -615,3 +615,10 @@ has_many :boards
 ```sh
 rails db:migrate
 ```
+
+## Git Commit for Add user id
+
+```sh
+git add .
+git commit -m "feat: add uer id to board"
+```

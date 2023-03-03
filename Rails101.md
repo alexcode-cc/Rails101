@@ -622,3 +622,175 @@ rails db:migrate
 git add .
 git commit -m "feat: add uer id to board"
 ```
+
+## Modify boards controller / views for User 
+
+```sh
+vim app/controllers/boards_controller.rb
+```
+
+```rb
+before_action :authenticate_user! , only: [:new, :create]
+
+def create
+  @board = Board.new(board_params)
+  @board.user = current_user
+
+  respond_to do |format|
+    if @board.save
+      format.html { redirect_to board_url(@board), notice: "Board was successfully created." }
+      format.json { render :show, status: :created, location: @b
+      format.html { render :new, status: :unprocessable_entity }
+      format.json { render json: @board.errors, status: :unprocessable_entity }
+    end
+  end
+end
+```
+
+```sh
+vim app/views/boards/index.html.erb
+```
+```rb
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Creator</th>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @boards.each do |board| %>
+      <tr>
+        <td><%= board.name %></td>
+        <td><%= board.user.email %></td>
+        <td><%= link_to 'Show', board %></td>
+        <td><%= link_to 'Edit', edit_board_path(board) %></td>
+        <td><%= link_to 'Destroy', board, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+```
+## Modify seed for create default user 
+
+```sh
+vim db/seed.rb
+```
+
+```rb
+user = User.create! :email => 'admin@rails101.org', :password => 'P@ssw0rd9999', :password_confirmation => 'P@ssw0rd9999'
+5.times do |i|
+  Board.create(name: "board ##{i+1}", user_id: 1)
+  2.times do |j|
+    Post.create(title: "title for b#{i+1} p#{j+1}", content: "content for board ##{i+1} post ##{j+1}", board_id: i+1)
+  end
+end 
+```
+
+```sh
+rails db:reset
+```
+
+## Only board owner can edit/delete post
+
+```sh
+vim app/controllers/boards_controller.rb
+```
+
+```rb
+  before_action :authenticate_user! , only: [:new, :create, :edit, :update, :destroy]
+  before_action :check_user , only: [:edit, :update, :destroy]
+
+def check_user
+  if current_user != @board.user
+    redirect_to root_path, alert: "#{current_user.email}, You are no permission."
+  end
+end
+```
+
+```sh
+vim app/views/boards/index.html.erb
+```
+
+```rb
+<tbody>
+  <% @boards.each do |board| %>
+    <tr>
+      <td><%= board.name %></td>
+      <td><%= board.user.email %></td>
+      <td><%= link_to 'Show', board %></td>
+      <% if current_user && current_user == board.user %>
+      <td><%= link_to 'Edit', edit_board_path(board) %></td>
+      <td><%= link_to 'Destroy', board, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      <% end %>
+    </tr>
+  <% end %>
+</tbody>
+```
+
+```sh
+vim app/views/boards/show.html.erb
+```
+
+```rb
+<tbody>
+  <% @posts.each do |post| %>
+    <tr>
+      <td><%= post.title %>
+      <td><%= post.content %>
+      <td><%= link_to 'Show', board_post_path(@board, post) %></td>
+      <% if current_user && current_user == @board.user %>
+      <td><%= link_to 'Edit', edit_board_post_path(@board, post) %></td>
+      <td><%= link_to 'Destroy', board_post_path(@board, post), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      <% end %>
+    </tr>
+  <% end %>
+</tbody>
+```
+
+```sh
+vim app/controllers/posts_controller.rb
+```
+
+```rb
+before_action :authenticate_user! , except: [:show]
+before_action :check_user , only: [:new, :edit, :update, :destroy]
+
+def check_user
+  if current_user != @board.user
+    redirect_to board_path(@board), alert: "#{current_user.email}, You are no permission to create/update/delete post."
+  end
+end
+```
+
+```sh
+vim app/views/posts/show.html.erb
+```
+
+```rb
+<% if current_user && current_user == @board.user %>
+<%= link_to 'Edit', edit_board_post_path(@board, @post) %> |
+<% end %>
+```
+
+```sh
+vim app/views/layouts/application.html.erb
+```
+
+```rb
+<body>
+  <%= render 'common/user_nav' %>
+  <!--<p class="notice"><%= notice %></p>-->
+  <p class="alert" style="color:red"><%= alert %></p  >
+  <%= yield %>
+</body>
+```
+
+## Git Commit for  boards controller/views
+
+```sh
+git add .
+git commit -m "feat: modify boards/views for user permission"
+```

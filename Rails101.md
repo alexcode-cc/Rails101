@@ -244,7 +244,7 @@ vim app/views/pages/about.html.erb
     </tr>
     <tr>
       <td>Current Time</td>
-      <td><%= Time.current %></td>
+      <td><%= Time.current.to_s(:long) %></td> 
     </tr>
   </tbody>
 </table>
@@ -266,6 +266,25 @@ root :to => "pages#about"
 ```sh
 rails db:migrate
 ./run.sh
+```
+
+## Add Rake Task
+
+```sh
+vim lib/tasks/dev.rake
+```
+
+```rb
+namespace :dev do                                                                                                      
+  desc "Clean log and temp files"                                                                                      
+  task :clean => ["tmp:clear", "log:clear"]                                                                            
+                                                                                                                       
+  desc "Rebuild System"                                                                                                
+  task :rebuild => [ "dev:clean", "db:migrate", "db:seed" ]                                                            
+                                                                                                                       
+  desc "Drop and Create Database"                                                                                      
+  task :recreate=> ["db:drop", "db:create"]                                                                            
+end
 ```
 
 ## Scaffold Boards Posts
@@ -631,6 +650,34 @@ vim app/controllers/boards_controller.rb
 before_action :authenticate_user! , only: [:new]
 ```
 
+```sh
+rails generate migration add_name_to_user name:string
+```
+
+```rb
+class AddNameToUser < ActiveRecord::Migration[5.1]
+  def change
+    add_column :users, :name, :string
+  end
+end
+```
+
+```sh
+rails db:migrate
+vim app/views/devise/regaistrations/new.html.erb
+```
+
+```rb
+<div class="field">
+  <%= f.label :name %><br />
+  <%= f.name_field :name, autofocus: true %>
+</div>  
+<div class="field">
+  <%= f.label :email %><br />
+  <%= f.email_field :email, autofocus: true, autocomplete: "email" %>
+</div>  
+```
+
 ## Git Commit for Install Devise 
 
 ```sh
@@ -651,7 +698,7 @@ vim app/views/common/_user_nav.html.erb
     <%= link_to 'Sign in', new_user_session_path %>
     <%= link_to 'Sign up', new_user_registration_path %>
   <% else %>
-    Hi! <%= current_user.email %>
+    Hi! <%= current_user.name %>
     <%= link_to 'Sign out', destroy_user_session_path, :method => :delete %>
   <% end %>
 </div>
@@ -768,7 +815,7 @@ vim db/seed.rb
 ```
 
 ```rb
-user = User.create! :email => 'admin@rails101.org', :password => 'P@ssw0rd9999', :password_confirmation => 'P@ssw0rd9999'
+user = User.create! :name => 'admin', :email => 'admin@rails101.org', :password => 'P@ssw0rd9999', :password_confirmation => 'P@ssw0rd9999'
 5.times do |i|
   Board.create(name: "board ##{i+1}", user_id: 1)
   2.times do |j|

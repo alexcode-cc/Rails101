@@ -154,19 +154,6 @@ sudo ufw allow from 192.168.0.0/24
 sudo ufw enable
 ```
 
-## Create New Project
-
-```sh
-rails new rails101
-cp .ruby-gemset rails101/.
-cp .ruby-version rails101/.
-cd rails101
-bundle
-rails db:migrate
-rails db:seed
-rails server -b 0.0.0.0
-```
-
 # Setup Rails102
 
 ## Create New Project
@@ -189,6 +176,97 @@ git add .
 git commit -m "Initial commit"
 git branch -m master main && git symbolic-ref HEAD refs/heads/main 
 git flow init
+```
+
+## Add About page
+
+```sh
+rails generate controller pages
+vim app/controllers/pages_controller.rb
+```
+
+```rb
+require 'socket'
+class PagesController < ApplicationController
+  def about
+    #@rails = Rails.version
+    #@ruby = RUBY_VERSION
+    #@env = Rails.env
+    @host = Socket.gethostname
+    @ip = Socket.ip_address_list.find { |allip| allip.ipv4? && !allip.ipv4_loopback? }.ip_address
+    @remote_ip = request.remote_ip
+    #@time = Time.current
+  end 
+end 
+```
+
+```sh
+vim app/views/pages/about.html.erb
+```
+
+```rb
+<p id="notice"><%= notice %></p>                                                                                       
+
+<h1>About</h1>
+    
+<hr>
+<table>
+  <thead> 
+    <tr>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr>
+      <td>Rails Version</td>
+      <td><%= Rails.version %></td>
+    </tr>
+    <tr>
+      <td>Ruby Version</td>
+      <td><%= RUBY_VERSION %></td>
+    </tr>
+    <tr>
+      <td>Rails Environment</td>
+      <td><%= Rails.env %></td>
+    </tr>
+    <tr>
+      <td>Host</td>
+      <td><%= @host %></td>
+    </tr>
+    <tr>
+      <td>Host IP</td>
+      <td><%= @ip %></td>
+    </tr>
+    <tr>
+      <td>Remote IP</td>
+      <td><%= @remote_ip %></td>
+    </tr>
+    <tr>
+      <td>Current Time</td>
+      <td><%= Time.current %></td>
+    </tr>
+  </tbody>
+</table>
+
+<hr>
+<p>
+
+<%= link_to 'Boards', boards_path %>
+```
+
+```sh
+vim config/routes.rb
+```
+
+```rb
+root :to => "pages#about"
+```
+
+```sh
+rails db:migrate
+./run.sh
 ```
 
 ## Scaffold Boards Posts

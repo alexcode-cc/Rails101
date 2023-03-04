@@ -154,7 +154,7 @@ sudo ufw allow from 192.168.0.0/24
 sudo ufw enable
 ```
 
-# Setup Rails102
+# Setup Rails101
 
 ## Create New Project
 
@@ -205,10 +205,9 @@ vim app/views/pages/about.html.erb
 ```
 
 ```rb
-<p id="notice"><%= notice %></p>                                                                                       
-
-<h1>About</h1>
-    
+<p id="notice"><%= notice %>
+</p>                                                                                       
+<h1><%= Rails.application.class.parent_name %></h1> 
 <hr>
 <table>
   <thead> 
@@ -950,6 +949,11 @@ gem 'capistrano-passenger'
 gem 'capistrano-rvm'
 gem 'ed25519', '>= 1.2'
 gem 'bcrypt_pbkdf', '>= 1.0'
+gem 'bcrypt', '~> 3.1.7'
+# Gemfile
+group :development do
+  gem 'capistrano-deploytags', '~> 1.0.0', require: false
+end
 ```
 
 ```sh
@@ -966,6 +970,8 @@ vim Capfile
 ```rb
 require "capistrano/rvm"
 require "capistrano/rails"
+require 'capistrano/rails/console'
+require 'capistrano/deploytags'
 require "capistrano/passenger"
 ```
 

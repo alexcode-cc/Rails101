@@ -196,6 +196,7 @@ class PagesController < ApplicationController
     @ip = Socket.ip_address_list.find { |allip| allip.ipv4? && !allip.ipv4_loopback? }.ip_address
     @remote_ip = request.remote_ip
     #@time = Time.current
+    @adapter = ActiveRecord::Base.connection.adapter_name
   end 
 end 
 ```
@@ -997,6 +998,8 @@ gem 'capistrano-rvm'
 gem 'ed25519', '>= 1.2'
 gem 'bcrypt_pbkdf', '>= 1.0'
 gem 'bcrypt', '~> 3.1.7'
+gem 'capistrano-rails-console', require: false 
+# for git tag -l -n1
 group :development do
   gem 'capistrano-deploytags', '~> 1.0.0', require: false
 end
@@ -1016,11 +1019,11 @@ vim Capfile
 ```rb
 require "capistrano/rvm"
 require "capistrano/rails"
-require 'capistrano/rails/console'
+require "capistrano/rails/console"
 require "capistrano/bundler" 
 require "capistrano/rails/assets"
 require "capistrano/rails/migrations" 
-require 'capistrano/deploytags'
+require "capistrano/deploytags"
 require "capistrano/passenger"
 ```
 
@@ -1173,12 +1176,12 @@ Create databsses and users
 ```sql
 ALTER USER 'root'@'localhost' IDENTIFIED WITH auth_socket;
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'myrootpassword';
-FLUSH PRIVILEGES;
 CREATE DATABASE rails101 CHARACTER SET utf8mb4;
 CREATE USER 'rails101'@'localhost' IDENTIFIED BY 'rails101password';
 GRANT ALL PRIVILEGES ON rails101.* TO 'rails101'@'localhost';
 CREATE DATABASE rails101_staging CHARACTER SET utf8mb4;
 GRANT ALL PRIVILEGES ON rails101_staging.* TO 'rails101'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
 Add 'mysql' gem

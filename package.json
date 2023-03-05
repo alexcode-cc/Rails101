@@ -2,7 +2,13 @@
   "name": "rails101",
   "private": true,
   "devDependencies": {
+    "conventional-changelog-cli": "^2.2.2",
     "cz-conventional-changelog": "^3.3.0"
+  },
+  "scripts": {
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "changelog:try": "conventional-changelog -p angular -i CHANGELOG.md -o",
+    "changelog:help": "conventional-changelog --help"
   },
   "config": {
     "commitizen": {

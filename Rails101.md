@@ -188,6 +188,31 @@ commitizen init cz-conventional-changelog --save --save-exact
 ```
 
 ```sh
+npm install -D conventional-changelog
+npm install -D conventional-changelog-cli
+vim package.json
+```
+
+```json
+"scripts": { "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s" }, 
+"scripts": { "changelog": "conventional-changelog -p angular -i CHANGELOG.md -w" }, 
+```
+
+```sh
+npm install
+npm run changelog
+git add .
+git commit
+```
+
+```git
+chore: setup conventional-changelog package"
+
+npm install -D conventional-changelog-cli
+"scripts": { "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s" }
+```
+
+```sh
 git flow init
 ```
 

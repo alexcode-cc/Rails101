@@ -997,7 +997,6 @@ gem 'capistrano-rvm'
 gem 'ed25519', '>= 1.2'
 gem 'bcrypt_pbkdf', '>= 1.0'
 gem 'bcrypt', '~> 3.1.7'
-# Gemfile
 group :development do
   gem 'capistrano-deploytags', '~> 1.0.0', require: false
 end
@@ -1010,7 +1009,7 @@ bundle install
 ## Setup Capistrano
 
 ```sh
-cap install
+cap install STAGES=local,sandbox,qa,staging,production
 vim Capfile
 ```
 
@@ -1018,6 +1017,9 @@ vim Capfile
 require "capistrano/rvm"
 require "capistrano/rails"
 require 'capistrano/rails/console'
+require "capistrano/bundler" 
+require "capistrano/rails/assets"
+require "capistrano/rails/migrations" 
 require 'capistrano/deploytags'
 require "capistrano/passenger"
 ```

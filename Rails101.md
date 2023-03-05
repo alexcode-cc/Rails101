@@ -175,6 +175,19 @@ chmod u+x run.sh
 git add .
 git commit -m "Initial commit"
 git branch -m master main && git symbolic-ref HEAD refs/heads/main 
+npm install -g commitizen
+commitizen init cz-conventional-changelog --save --save-exact
+git add .
+git commit
+```
+
+```git
+chore: cz-conventional init
+npm install -g commitizen
+commitizen init cz-conventional-changelog --save --save-exact 
+```
+
+```sh
 git flow init
 ```
 
